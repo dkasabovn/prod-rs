@@ -3,32 +3,41 @@
 use std::fs::*;
 use std::fs;
 use std::io::prelude::*;
+use std::collections::HashMap;
+
+use configparser::ini::Ini;
 
 fn main() {
     println!("Hello, world!");
 
-    let UUID = "a7a483d5-7425-40dc-8c11-0136768f72df".to_string();
-    pull(&UUID);
-    println!("{:#?}", read(&UUID))
+    let mut config = Ini::new();
+    let map = config.load("todo.conf")
+        .expect("Unable to open file!");
+
+    let list_ids = map.get("lists")
+        .expect("No lists found!");
+
+    pull(&list_ids);
 }
 
-/// Grabs a .csv file from Amazon S3
-fn pull(UUID: &String) -> std::io::Result<()> {
+/// Grabs all list files in todo.conf from S3
+fn pull(list_ids: &HashMap<String, Option<String>>) -> std::io::Result<()> {
     //URL Scheme: https://s3.amazonaws.com/dk.todors.dev/
-    println!("https://s3.amazonaws.com/dk.todors.dev/{}.tamu", UUID);
+    for list_id in list_ids.values() {
+        let UUID = list_id.as_ref().unwrap();
+        let response = match reqwest::blocking::get(format!("https://s3.amazonaws.com/dk.todors.dev/{}.tamu", UUID)) {
+            Ok(v) => v.text(),
+            Err(_) => panic!("Error making request to S3"),
+        };
 
-    let response = match reqwest::blocking::get(format!("https://s3.amazonaws.com/dk.todors.dev/{}.tamu", UUID)) {
-        Ok(v) => v.text(),
-        Err(_) => panic!("Error making request to S3"),
-    };
+        let body = match response {
+            Ok(v) => v,
+            Err(_) => panic!("Error decoding to text"),
+        };
 
-    let body = match response {
-        Ok(v) => v,
-        Err(_) => panic!("Error decoding to text"),
-    };
-
-    let mut file = File::create(format!("{}.tamu", UUID))?;
-    file.write_all(body.as_bytes())?;
+        let mut file = File::create(format!("{}.tamu", UUID))?;
+        file.write_all(body.as_bytes())?;
+    }
 
     Ok(())
 }

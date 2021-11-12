@@ -5,8 +5,8 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct ListItem {
-    status: String,
-    description: String,
+    pub status: String,
+    pub description: String,
     ttl: i32,
 }
 
@@ -30,8 +30,8 @@ impl ListItem {
 /// Grabs all list files in todo.conf from S3
 pub fn pull(list_ids: &HashMap<String, Option<String>>) -> std::io::Result<()> {
     //URL Scheme: https://s3.amazonaws.com/dk.todors.dev/
-    for list_id in list_ids.values() {
-        let UUID = list_id.as_ref().unwrap();
+    for list_id in list_ids.keys() {
+        let UUID = list_id;
         let response = match reqwest::blocking::get(format!("https://s3.amazonaws.com/dk.todors.dev/{}.tamu", UUID)) {
             Ok(v) => v.text(),
             Err(_) => panic!("Error making request to S3"),

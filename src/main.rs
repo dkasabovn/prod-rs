@@ -68,11 +68,13 @@ fn list(list_ids: &HashMap<String, Option<String>>, home_ids: &Option<&HashMap<S
         Some(UUIDs) => {
             for UUID in UUIDs.keys() {
                 display(UUID);
+                println!("")
             }
         },
         None => {
             for UUID in list_ids.keys() {
-                display(UUID)
+                display(UUID);
+                println!("")
             }
         }
     }

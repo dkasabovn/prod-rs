@@ -8,7 +8,7 @@ use std::collections::HashMap;
 /// 
 /// Status - A String that is either TODO or DONE
 /// Description - The actual todo content
-/// ttl - Time to Life is the time before the task is auto deleted
+/// ttl - Time to Life is the time before the task is auto deleted expires
 pub struct ListItem {
     pub status: String,
     pub description: String,
@@ -19,9 +19,11 @@ impl ListItem {
     fn new(row: &str) -> ListItem {
 
         let fields: Vec<&str> = row.split(",").collect();
-        let ttl: i32 = match fields[2].parse() {
+        let ttl: i32 = match fields[2].trim().parse() {
             Ok(v) => v,
-            Err(_) => panic!("File error! Unable to properly convert int!")
+            Err(_) => {
+                eprintln!("DEBUG:[{}]", fields[2]);
+                panic!("File error! Unable to properly convert int!")}
         };
 
         ListItem{

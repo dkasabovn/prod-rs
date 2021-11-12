@@ -3,11 +3,16 @@ use std::fs;
 use std::io::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+// #[derive(Debug)]
+/// Stores a single TODO item
+/// 
+/// Status - A String that is either TODO or DONE
+/// Description - The actual todo content
+/// ttl - Time to Life is the time before the task is auto deleted
 pub struct ListItem {
     pub status: String,
     pub description: String,
-    ttl: i32,
+    ttl: i32
 }
 
 impl ListItem {
@@ -28,6 +33,8 @@ impl ListItem {
 }
 
 /// Grabs all list files in todo.conf from S3
+/// 
+/// Goes through each ID listed in the configuration file and grabs the contents from S3. The files are saved as {UUID}.tamu
 pub fn pull(list_ids: &HashMap<String, Option<String>>) -> std::io::Result<()> {
     //URL Scheme: https://s3.amazonaws.com/dk.todors.dev/
     for list_id in list_ids.keys() {
@@ -49,7 +56,7 @@ pub fn pull(list_ids: &HashMap<String, Option<String>>) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Read from the .tamu file and store in vector
+/// Read from the .tamu file and store in a vector
 pub fn read(UUID: &String) -> Vec<ListItem> {
     let content =  fs::read_to_string(format!("{}.tamu", UUID))
         .expect("Error opening file!");

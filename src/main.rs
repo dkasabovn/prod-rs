@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use configparser::ini::Ini;
 
 fn main() {
+    //Config stuff
     let mut config = Ini::new();
     let map = config.load("todo.conf")
         .expect("Unable to open file!");
@@ -17,6 +18,7 @@ fn main() {
 
     let home_ids = map.get("home");
     
+    //Parse arguments
     let args: Vec<String> = env::args().collect();
     match args.get(1) {
         Some(letter) => match letter.as_ref() {
@@ -29,6 +31,10 @@ fn main() {
     }
 }
 
+/// Prints and error message and the available options in the event that the user gives an invalid parameter
+/// 
+/// We specifically use eprintln for the error message so that it will trigger stderr for the message.
+/// The ordinary help information is written using the standard println
 fn help(error_message: &str) {
     eprintln!("{}", error_message);
 
@@ -39,7 +45,15 @@ fn help(error_message: &str) {
     println!("u - Update list with AWS S3");
 }
 
+/// Outputs the tasks in a non-interactive format to the console
+/// 
+/// If there are lists specified in the [HOME] section of the conf file, then only those lists will be printed.
+/// The default behavior is to print every list available in the [LISTS] section.
+/// 
+/// This function can be called if the user wants the tasks to be printed whenever they spawn a new terminal for example.
 fn list(list_ids: &HashMap<String, Option<String>>, home_ids: &Option<&HashMap<String, Option<String>>>) {
+
+    //Closure that does the actual printing
     let display = |UUID: &String| {
         println!("{}", list_ids.get(UUID).unwrap().as_ref().unwrap());
         println!("----------");
